@@ -1,0 +1,63 @@
+version: "{build}"
+
+environment:
+  gettextSrcURL: https://ftp.gnu.org/gnu/gettext/gettext-0.23.1.tar.xz
+  gettextSrcBaseName: gettext-0.23.1
+  gettextURL: https://github.com/vslavik/gettext-tools-windows/releases/download/v0.23.1/gettext-tools-windows-0.23.1.zip
+  gettextBaseName: gettext-tools-windows-0.23.1
+  matrix:
+    - BUILD_NAME: Win64 Qt6
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+      VSPATH: C:\Program Files\Microsoft Visual Studio\2022\Community\SDK\ScopeCppSDK\vc15\VC\bin
+      CMAKE_GENERATOR: Visual Studio 17 2022
+      QT_BASEDIR: C:/Qt/6.8/msvc2022_64
+      BITS: 64
+
+configuration:
+  - Release
+
+for:
+-
+  matrix:
+    only:
+      - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+  install:
+      # Make sure we get the bash that comes with git, not WSL bash
+    - ps: $env:Path = "C:\msys64\bin;C:\Program Files\Git\bin;$env:Path"
+
+  before_build:
+    - cd C:/projects && mkdir build && mkdir install && cd build
+    - set PATH=%VSPATH%;%QT_BASEDIR%\bin;%PATH%
+
+      # Prepare gettextpo DLL, LIB, and the DLL's dependencies
+    - ps: appveyor DownloadFile $env:gettextURL -FileName c:\$env:gettextBaseName.zip
+    - ps: 7z e c:\$env:gettextBaseName.zip -spf -oc:\$env:gettextBaseName
+    - ps: mkdir c:\$env:gettextBaseName\include
+    - ps: appveyor DownloadFile $env:gettextSrcURL -FileName c:\$env:gettextSrcBaseName.tar.xz
+    - ps: 7z e c:\$env:gettextSrcBaseName.tar.xz -spf -oc:\
+    - ps: 7z e c:\$env:gettextSrcBaseName.tar -spf -oc:\
+    - ps: (cat c:\$env:gettextSrcBaseName\gettext-tools\libgettextpo\gettext-po.in.h) -replace "extern ([^()]*);","extern __declspec (dllimport) `$1;" > c:\$env:gettextBaseName\include\gettext-po.h
+    - ps: echo EXPORTS > libgettextpo.def
+    - ps: cp c:\$env:gettextBaseName\bin\libgettextpo-0.dll c:\$env:gettextBaseName\bin\libgettextpo.dll
+    - ps: (dumpbin /EXPORTS c:\$env:gettextBaseName\bin\libgettextpo.dll) -match "^.*\b(po_.*)$" -replace "^.*\b(po_.*)$","`$1" >> libgettextpo.def
+    - ps: lib /def:libgettextpo.def /out:c:\$env:gettextBaseName\lib\libgettextpo.lib
+
+    - cmake -G "%CMAKE_GENERATOR%" -DCMAKE_PREFIX_PATH=c:\%gettextBaseName% -DCMAKE_INSTALL_PREFIX=../install ../stellarium-skyculture-converter %CMAKE_ARGS%
+
+  build_script:
+    - cmake --build . --config %configuration% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+
+  after_build:
+    - if Release == %configuration%  cmake --build . --config %configuration% --target install
+    - if Release == %configuration%  bash -c "echo 0.0.1 > versionVar"
+    - if Release == %configuration%  set /p projectVersion=<versionVar
+    - if Release == %configuration%  set platform=win%BITS%
+    - if Release == %configuration%  set tarballBaseName=stellarium-skyculture-converter-%projectVersion%-%platform%
+    - if Release == %configuration%  echo %tarballBaseName%
+    - if Release == %configuration%  bash -c "mv -v ../install/skyculture-converter ../install/$tarballBaseName"
+    - if Release == %configuration%  bash -c "cp -v /c/$gettextBaseName/bin/libgettextpo.dll ../install/$tarballBaseName"
+    - if Release == %configuration%  bash -c "cp -v /c/$gettextBaseName/bin/libiconv-2.dll ../install/$tarballBaseName"
+    - if Release == %configuration%  bash -c "cp -v /c/$gettextBaseName/bin/libintl-8.dll ../install/$tarballBaseName"
+    - if Release == %configuration%  7z a stellarium-skyculture-converter-%projectVersion%-%platform%.zip ../install/stellarium-skyculture-converter-%projectVersion%-%platform%
+    - if Release == %configuration%  7z l stellarium-skyculture-converter-%projectVersion%-%platform%.zip
+    - if Release == %configuration%  appveyor PushArtifact stellarium-skyculture-converter-%projectVersion%-%platform%.zip
