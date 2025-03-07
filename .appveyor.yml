@@ -54,10 +54,11 @@ for:
     - if Release == %configuration%  set platform=win%BITS%
     - if Release == %configuration%  set tarballBaseName=stellarium-skyculture-converter-%projectVersion%-%platform%
     - if Release == %configuration%  echo %tarballBaseName%
-    - if Release == %configuration%  bash -c "mv -v ../install/skyculture-converter ../install/$tarballBaseName"
-    - if Release == %configuration%  bash -c "cp -v /c/$gettextBaseName/bin/libgettextpo.dll ../install/$tarballBaseName"
-    - if Release == %configuration%  bash -c "cp -v /c/$gettextBaseName/bin/libiconv-2.dll ../install/$tarballBaseName"
-    - if Release == %configuration%  bash -c "cp -v /c/$gettextBaseName/bin/libintl-8.dll ../install/$tarballBaseName"
-    - if Release == %configuration%  7z a stellarium-skyculture-converter-%projectVersion%-%platform%.zip ../install/stellarium-skyculture-converter-%projectVersion%-%platform%
-    - if Release == %configuration%  7z l stellarium-skyculture-converter-%projectVersion%-%platform%.zip
-    - if Release == %configuration%  appveyor PushArtifact stellarium-skyculture-converter-%projectVersion%-%platform%.zip
+    - if Release == %configuration%  bash -c "mkdir -pv ../out/$tarballBaseName"
+    - if Release == %configuration%  bash -c "mv -v ../install/* ../out/$tarballBaseName/"
+    - if Release == %configuration%  bash -c "cp -v /c/$gettextBaseName/bin/libgettextpo.dll ../out/$tarballBaseName"
+    - if Release == %configuration%  bash -c "cp -v /c/$gettextBaseName/bin/libiconv-2.dll ../out/$tarballBaseName"
+    - if Release == %configuration%  bash -c "cp -v /c/$gettextBaseName/bin/libintl-8.dll ../out/$tarballBaseName"
+    - if Release == %configuration%  7z a %tarballBaseName%.zip ../out/%tarballBaseName%
+    - if Release == %configuration%  7z l %tarballBaseName%.zip
+    - if Release == %configuration%  appveyor PushArtifact %tarballBaseName%.zip

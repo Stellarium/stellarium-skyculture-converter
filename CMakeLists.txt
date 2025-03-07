@@ -24,11 +24,8 @@ add_executable(skyculture-converter
 target_link_libraries(skyculture-converter Qt::Core Qt::Gui GettextPo::GettextPo)
 
 if(WIN32 AND (NOT MINGW))
-    set(shadersDestPath "${CMAKE_PROJECT_NAME}")
-    set(installBinDir "${CMAKE_PROJECT_NAME}")
+    set(installBinDir ".")
     set(installLibDir "${installBinDir}")
-    set(installConfDir "${CMAKE_PROJECT_NAME}/lib")
-    set(installIncDir "${CMAKE_PROJECT_NAME}/include")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHs")
 
     # Deploy Qt
@@ -43,11 +40,8 @@ if(WIN32 AND (NOT MINGW))
 
 else()
     include(GNUInstallDirs)
-    set(shadersDestPath "${CMAKE_INSTALL_DATAROOTDIR}/${CMAKE_PROJECT_NAME}")
     set(installBinDir "${CMAKE_INSTALL_BINDIR}")
     set(installLibDir "${CMAKE_INSTALL_LIBDIR}")
-    set(installConfDir "${CMAKE_INSTALL_LIBDIR}")
-    set(installIncDir "${CMAKE_INSTALL_INCLUDEDIR}")
 endif()
 
 install(TARGETS skyculture-converter DESTINATION "${installBinDir}")
