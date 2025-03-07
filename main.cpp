@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QFile>
 #include <QSettings>
+#include <QCoreApplication>
 #include <QRegularExpression>
 #include "NamesOldLoader.hpp"
 #include "AsterismOldLoader.hpp"
@@ -79,6 +80,8 @@ int usage(const char* argv0, const int ret)
 
 int main(int argc, char** argv)
 {
+	QCoreApplication app(argc, argv);
+
 	QString inDir;
 	QString outDir;
 	QString poDir;
