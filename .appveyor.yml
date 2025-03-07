@@ -48,17 +48,17 @@ for:
     - cmake --build . --config %configuration% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
 
   after_build:
-    - if Release == %configuration%  cmake --build . --config %configuration% --target install
-    - if Release == %configuration%  bash -c "echo 0.0.1 > versionVar"
-    - if Release == %configuration%  set /p projectVersion=<versionVar
-    - if Release == %configuration%  set platform=win%BITS%
-    - if Release == %configuration%  set tarballBaseName=stellarium-skyculture-converter-%projectVersion%-%platform%
-    - if Release == %configuration%  echo %tarballBaseName%
-    - if Release == %configuration%  bash -c "mkdir -pv ../out/$tarballBaseName"
-    - if Release == %configuration%  bash -c "mv -v ../install/* ../out/$tarballBaseName/"
-    - if Release == %configuration%  bash -c "cp -v /c/$gettextBaseName/bin/libgettextpo.dll ../out/$tarballBaseName"
-    - if Release == %configuration%  bash -c "cp -v /c/$gettextBaseName/bin/libiconv-2.dll ../out/$tarballBaseName"
-    - if Release == %configuration%  bash -c "cp -v /c/$gettextBaseName/bin/libintl-8.dll ../out/$tarballBaseName"
-    - if Release == %configuration%  7z a %tarballBaseName%.zip ../out/%tarballBaseName%
-    - if Release == %configuration%  7z l %tarballBaseName%.zip
-    - if Release == %configuration%  appveyor PushArtifact %tarballBaseName%.zip
+    - cmake --build . --config %configuration% --target install
+    - bash -c "echo 0.0.1 > versionVar"
+    - set /p projectVersion=<versionVar
+    - set platform=win%BITS%
+    - set tarballBaseName=stellarium-skyculture-converter-%projectVersion%-%platform%
+    - echo %tarballBaseName%
+    - bash -c "mkdir -pv ../out/$tarballBaseName"
+    - bash -c "mv -v ../install/* ../out/$tarballBaseName/"
+    - bash -c "cp -v /c/$gettextBaseName/bin/libgettextpo.dll ../out/$tarballBaseName"
+    - bash -c "cp -v /c/$gettextBaseName/bin/libiconv-2.dll ../out/$tarballBaseName"
+    - bash -c "cp -v /c/$gettextBaseName/bin/libintl-8.dll ../out/$tarballBaseName"
+    - 7z a %tarballBaseName%.zip ../out/%tarballBaseName%
+    - 7z l %tarballBaseName%.zip
+    - appveyor PushArtifact %tarballBaseName%.zip
