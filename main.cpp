@@ -74,9 +74,8 @@ int usage(const char* argv0, const int ret)
 	    << "  --full-markdown            Try to convert most of HTML constructs to their Markdown counterparts\n"
 	    << "  --convert-olists           Try to convert ordered lists to Markdown (only when --full-markdown is on)\n"
 	    << "  --untrans-names-are-native Record untranslatable star/DSO names as native names\n"
-	    << "  --native-locale LOCALE     Use constellation_names.LOCALE.fab as a source for \"native\" constellation\n"
-	       "                             names (the middle column in constellation_names.eng.fab will be moved to\n"
-	       "                             the \"pronounce\" entry.\n"
+	    << "  --native-locale LOCALE     Use *_names.LOCALE.fab as a source for \"native\" constellation names (the\n"
+	       "                             middle column in *_names.eng.fab will be moved to the \"pronounce\" entry.\n"
 	    << "  --translated-md            Generate localized Markdown files (for checking translations)\n";
 	return ret;
 }
@@ -170,7 +169,7 @@ int main(int argc, char** argv)
 	cLoader.load(inDir, outDir, nativeLocale);
 
 	NamesOldLoader nLoader;
-	nLoader.load(inDir, convertUntranslatableNamesToNative);
+	nLoader.load(inDir, nativeLocale, convertUntranslatableNamesToNative);
 
 	std::cerr << "Starting emission of JSON...\n\n";
 	aLoader.dumpJSON(out);

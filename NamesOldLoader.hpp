@@ -13,6 +13,7 @@ public:
 		int HIP;
 		QString englishName;
 		QString nativeName;
+		QString pronounce;
 		QString translatorsComments;
 		std::vector<int> references;
 	};
@@ -21,6 +22,7 @@ public:
 		QString id;
 		QString englishName;
 		QString nativeName;
+		QString pronounce;
 		QString translatorsComments;
 		std::vector<int> references;
 	};
@@ -31,15 +33,15 @@ public:
 		QString native;
 		QString translatorsComments;
 	};
-	void load(const QString& skyCultureDir, bool convertUntranslatableNamesToNative);
+	void load(const QString& skyCultureDir, const QString& nativeLocale, bool convertUntranslatableNamesToNative);
 	const StarName* findStar(QString const& englishName) const;
 	const DSOName* findDSO(QString const& englishName) const;
 	const PlanetName* findPlanet(QString const& englishName) const;
 	bool dumpJSON(std::ostream& s) const;
 
 private:
-	void loadStarNames(const QString& skyCultureDir, bool convertUntranslatableNamesToNative);
-	void loadDSONames(const QString& skyCultureDir, bool convertUntranslatableNamesToNative);
+	void loadStarNames(const QString& skyCultureDir, const QString& nativeLocale, bool convertUntranslatableNamesToNative);
+	void loadDSONames(const QString& skyCultureDir, const QString& nativeLocale, bool convertUntranslatableNamesToNative);
 	void loadPlanetNames(const QString& skyCultureDir);
 	QMap<int/*HIP*/, std::vector<StarName>> starNames;
 	QMap<QString/*dsoId*/,std::vector<DSOName>> dsoNames;

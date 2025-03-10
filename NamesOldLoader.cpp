@@ -29,7 +29,8 @@ void coalesceEnglishAndNativeNamesIntoSingleEntries(Map& data)
 	}
 }
 
-void NamesOldLoader::loadStarNames(const QString& skyCultureDir, const bool convertUntranslatableNamesToNative)
+void NamesOldLoader::loadStarNames(const QString& skyCultureDir, const QString& nativeLocale,
+                                   const bool convertUntranslatableNamesToNative)
 {
 	const auto nameFile = skyCultureDir + "/star_names.fab";
 	QFile cnFile(nameFile);
@@ -38,11 +39,20 @@ void NamesOldLoader::loadStarNames(const QString& skyCultureDir, const bool conv
 		qWarning().noquote() << "WARNING - could not open" << QDir::toNativeSeparators(nameFile);
 		return;
 	}
+	const auto nativeNameFile = skyCultureDir + "/star_names." + nativeLocale + ".fab";
+	QFile nativeFile(nativeNameFile);
+        bool useNative = !nativeNameFile.isEmpty();
+	if (useNative && !nativeFile.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		qWarning().noquote() << "WARNING - could not open" << QDir::toNativeSeparators(nameFile);
+                useNative = false;
+	}
 
 	int readOk=0;
 	int totalRecords=0;
 	int lineNumber=0;
-	QString record;
+	int lineNumberInNative=0;
+	QString record, nativeRecord;
 	// Allow empty and comment lines where first char (after optional blanks) is #
 	static const QRegularExpression commentRx("^(\\s*#.*|\\s*)$");
 	// record structure is delimited with a | character.  We will
@@ -69,6 +79,17 @@ void NamesOldLoader::loadStarNames(const QString& skyCultureDir, const bool conv
 			continue;
 		}
 
+		if (useNative)
+		{
+			while (!nativeFile.atEnd() && nativeRecord.isEmpty())
+			{
+				nativeRecord = QString::fromUtf8(nativeFile.readLine()).trimmed();
+				++lineNumberInNative;
+				if (nativeRecord.contains(commentRx))
+					nativeRecord.clear();
+			}
+		}
+
 		totalRecords++;
 		QRegularExpressionMatch recMatch=recordRx.match(record);
 		if (!recMatch.hasMatch())
@@ -91,7 +112,7 @@ void NamesOldLoader::loadStarNames(const QString& skyCultureDir, const bool conv
 				translatorsComments = "";
 				continue;
 			}
-			QString name = recMatch.captured(3).trimmed();
+			const QString name = recMatch.captured(3).trimmed();
 			if (name.isEmpty())
 			{
 				qWarning().noquote() << "WARNING - parse error at line" << lineNumber << "in" << QDir::toNativeSeparators(nameFile)
@@ -106,8 +127,56 @@ void NamesOldLoader::loadStarNames(const QString& skyCultureDir, const bool conv
 			else
 				englishName = name;
 
-			starNames[hip].push_back({hip,englishName,nativeName,translatorsComments,std::move(refs)});
+			QString pronounce;
+			if (useNative)
+			{
+				const QRegularExpressionMatch nativeRecMatch=recordRx.match(nativeRecord);
+				if (!nativeRecMatch.hasMatch())
+				{
+					if (nativeRecord.isEmpty())
+					{
+						qWarning() << "Premature end of file at line" << lineNumberInNative << "in" << QDir::toNativeSeparators(nativeNameFile)
+						           << "while parsing line" << lineNumber << "in" << QDir::toNativeSeparators(nameFile);
+						useNative = false;
+					}
+					else
+					{
+						qWarning().noquote() << "WARNING - parse error at line" << lineNumberInNative << "in" << QDir::toNativeSeparators(nativeNameFile)
+						                     << " - record does not match record pattern";
+						qWarning().noquote() << "Problematic record:" << nativeRecord;
+					}
+				}
+				else
+				{
+					const QString realNativeName = nativeRecMatch.captured(3).trimmed();
+					const int nativeHIP = nativeRecMatch.captured(1).toInt(&ok);
+					if (!ok)
+					{
+						qWarning().noquote() << "WARNING - parse error at line" << lineNumberInNative << "in" << QDir::toNativeSeparators(nativeNameFile)
+						                     << " - failed to convert " << nativeRecMatch.captured(1) << "to a number";
+					}
+					else if(nativeHIP != hip)
+					{
+						qWarning().nospace() << "WARNING: star id in native names file at line " << lineNumberInNative
+						                     << " differs from that in English names file at line " << lineNumber
+						                     << ". Will ignore all native star names after this point";
+						useNative = false;
+					}
+					else if (realNativeName.isEmpty())
+					{
+						qWarning() << "WARNING: no native name at line" << lineNumberInNative << "in" << QDir::toNativeSeparators(nativeNameFile);
+					}
+					else
+					{
+						pronounce = nativeName;
+						nativeName = realNativeName;
+					}
+				}
+			}
+
+			starNames[hip].push_back({hip,englishName,nativeName,pronounce,translatorsComments,std::move(refs)});
 			translatorsComments = "";
+			nativeRecord.clear();
 
 			readOk++;
 		}
@@ -130,21 +199,24 @@ auto NamesOldLoader::findStar(QString const& englishName) const -> StarName cons
 	return nullptr;
 }
 
-void NamesOldLoader::loadDSONames(const QString& skyCultureDir, const bool convertUntranslatableNamesToNative)
+void NamesOldLoader::loadDSONames(const QString& skyCultureDir, const QString& nativeLocale,
+                                  const bool convertUntranslatableNamesToNative)
 {
 	const auto namesFile = skyCultureDir + "/dso_names.fab";
-	if (namesFile.isEmpty())
-	{
-		qWarning() << "Failed to open file" << QDir::toNativeSeparators(namesFile);
-		return;
-	}
-
-	// Open file
 	QFile dsoNamesFile(namesFile);
 	if (!dsoNamesFile.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
 		qWarning() << "Failed to open file" << QDir::toNativeSeparators(namesFile);
 		return;
+	}
+
+	const auto nativeNameFile = skyCultureDir + "/dso_names." + nativeLocale + ".fab";
+	QFile nativeFile(nativeNameFile);
+        bool useNative = !nativeNameFile.isEmpty();
+	if (useNative && !nativeFile.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		qWarning() << "Failed to open file" << QDir::toNativeSeparators(nativeNameFile);
+                useNative = false;
 	}
 
 	// Now parse the file
@@ -155,10 +227,11 @@ void NamesOldLoader::loadDSONames(const QString& skyCultureDir, const bool conve
 	// which will be available in recMatch.capturedTexts()
 	static const QRegularExpression recRx("^\\s*([\\w\\s\\-\\+\\.]+)\\s*\\|(_*)[(]\"(.*)\"[)]\\s*([\\,\\d\\s]*)");
 
-	QString record, dsoId;
+	QString record, nativeRecord, dsoId;
 	int totalRecords=0;
 	int readOk=0;
 	int lineNumber=0;
+	int lineNumberInNative=0;
 	QString translatorsComments;
 	while (!dsoNamesFile.atEnd())
 	{
@@ -174,6 +247,17 @@ void NamesOldLoader::loadDSONames(const QString& skyCultureDir, const bool conve
 			else if(!comment.isEmpty())
 				translatorsComments = ""; // apparently previous translators' comment was not referring to the next entry
 			continue;
+		}
+
+		if (useNative)
+		{
+			while (!nativeFile.atEnd() && nativeRecord.isEmpty())
+			{
+				nativeRecord = QString::fromUtf8(nativeFile.readLine()).trimmed();
+				++lineNumberInNative;
+				if (nativeRecord.contains(commentRx))
+					nativeRecord.clear();
+			}
 		}
 
 		totalRecords++;
@@ -194,8 +278,47 @@ void NamesOldLoader::loadDSONames(const QString& skyCultureDir, const bool conve
 			else
 				englishName = name;
 
+			QString pronounce;
+			if (useNative)
+			{
+				const QRegularExpressionMatch nativeRecMatch=recRx.match(nativeRecord);
+				if (!nativeRecMatch.hasMatch())
+				{
+					if (nativeRecord.isEmpty())
+					{
+						qWarning() << "Premature end of file at line" << lineNumberInNative << "in" << QDir::toNativeSeparators(nativeNameFile)
+						           << "while parsing line" << lineNumber << "in" << QDir::toNativeSeparators(namesFile);
+						useNative = false;
+					}
+					else
+					{
+						qWarning().noquote() << "WARNING - parse error at line" << lineNumberInNative << "in" << QDir::toNativeSeparators(nativeNameFile)
+						                     << " - record does not match record pattern";
+						qWarning().noquote() << "Problematic record:" << nativeRecord;
+					}
+				}
+				else
+				{
+					const auto nativeDSOId = nativeRecMatch.captured(1).trimmed();
+					const auto realNativeName = nativeRecMatch.captured(3).trimmed(); // Use translatable text
+					if(nativeDSOId != dsoId)
+					{
+						qWarning().nospace() << "WARNING: DSO id in native names file at line " << lineNumberInNative
+						                     << " differs from that in English names file at line " << lineNumber
+						                     << ". Will ignore all native DSO names after this point";
+						useNative = false;
+					}
+					else
+					{
+						pronounce = nativeName;
+						nativeName = realNativeName;
+					}
+				}
+			}
+
 			auto&& refs = parseReferences(recMatch.captured(4).trimmed());
-			dsoNames[dsoId].push_back({dsoId,englishName,nativeName,translatorsComments,std::move(refs)});
+			dsoNames[dsoId].push_back({dsoId,englishName,nativeName,pronounce,translatorsComments,std::move(refs)});
+			nativeRecord.clear();
 
 			readOk++;
 		}
@@ -287,10 +410,11 @@ auto NamesOldLoader::findPlanet(QString const& englishName) const -> PlanetName 
 	return nullptr;
 }
 
-void NamesOldLoader::load(const QString& skyCultureDir, const bool convertUntranslatableNamesToNative)
+void NamesOldLoader::load(const QString& skyCultureDir, const QString& nativeLocale,
+                          const bool convertUntranslatableNamesToNative)
 {
-	loadStarNames(skyCultureDir, convertUntranslatableNamesToNative);
-	loadDSONames(skyCultureDir, convertUntranslatableNamesToNative);
+	loadStarNames(skyCultureDir, nativeLocale, convertUntranslatableNamesToNative);
+	loadDSONames(skyCultureDir, nativeLocale, convertUntranslatableNamesToNative);
 	loadPlanetNames(skyCultureDir);
 }
 
