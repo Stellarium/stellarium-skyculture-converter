@@ -39,6 +39,7 @@ class DescriptionOldLoader
 	std::set<DictEntry> allMarkdownSections;
 	bool dumpMarkdown(const QString& outDir) const;
 	void locateAndRelocateAllInlineImages(QString& html, bool saveToRefs);
+	void addUntranslatedNames(const QString scName, const ConstellationOldLoader& consLoader, const AsterismOldLoader& astLoader, const NamesOldLoader& namesLoader);
 	void loadTranslationsOfNames(const QString& poBaseDir, const QString& cultureId, const QString& englishName,
 	                             const ConstellationOldLoader& consLoader, const AsterismOldLoader& astLoader, const NamesOldLoader& namesLoader);
 	QString translateSection(const QString& markdown, const qsizetype bodyStartPos, const qsizetype bodyEndPos, const QString& locale, const QString& sectionName);

@@ -59,4 +59,6 @@ public:
 	bool dumpJSON(std::ostream& s) const;
 	bool hasBoundaries() const { return !boundaries.empty(); }
 	void setBoundariesType(std::string const& type) { boundariesType = type; }
+	auto begin() const { return constellations.cbegin(); }
+	auto end() const { return constellations.cend(); }
 };

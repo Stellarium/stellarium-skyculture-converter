@@ -21,6 +21,7 @@ public:
 			}
 		};
 		QString getTranslatorsComments() const { return translatorsComments; }
+		QString getEnglishName() const { return englishName; }
 	private:
 		//! International name (translated using gettext)
 		QString nameI18;
@@ -51,6 +52,8 @@ public:
 	void load(const QString& skyCultureDir, const QString& cultureId);
 	const Asterism* find(QString const& englishName) const;
 	bool dumpJSON(std::ostream& s) const;
+	auto begin() const { return asterisms.cbegin(); }
+	auto end() const { return asterisms.cend(); }
 private:
 	QString cultureId;
 	bool hasAsterism = false;

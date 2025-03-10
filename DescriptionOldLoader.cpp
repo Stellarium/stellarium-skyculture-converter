@@ -641,6 +641,122 @@ QString DescriptionOldLoader::translateDescription(const QString& markdownInput,
 
 	return text;
 }
+
+void DescriptionOldLoader::addUntranslatedNames(const QString scName, const ConstellationOldLoader& consLoader,
+                                                const AsterismOldLoader& astLoader, const NamesOldLoader& namesLoader)
+{
+	for(auto& dict : translations)
+	{
+		std::set<QString> translated;
+		for(const auto& entry : dict)
+			translated.insert(entry.english);
+		std::set<QString> emittedNames;
+		for(const auto& cons : consLoader)
+		{
+			if(translated.find(cons.englishName) != translated.end())
+				continue;
+			if(emittedNames.find(cons.englishName) == emittedNames.end())
+			{
+				QString comments = scName+" constellation";
+				if(!cons.nativeName.isEmpty())
+					comments += ", native: "+cons.nativeName;
+				comments += '\n' + cons.translatorsComments;
+				dict.push_back({{comments}, cons.englishName, ""});
+				emittedNames.insert(cons.englishName);
+			}
+			else
+			{
+				// TODO: merge comments
+			}
+		}
+		for(const auto& ast : astLoader)
+		{
+			if(translated.find(ast->getEnglishName()) != translated.end())
+				continue;
+			if(emittedNames.find(ast->getEnglishName()) == emittedNames.end())
+			{
+				QString comments = scName+" asterism";
+				comments += '\n' + ast->getTranslatorsComments();
+				dict.push_back({{comments}, ast->getEnglishName(), ""});
+				emittedNames.insert(ast->getEnglishName());
+			}
+			else
+			{
+				// TODO: merge comments
+			}
+		}
+		for(auto it = namesLoader.starsBegin(); it != namesLoader.starsEnd(); ++it)
+		{
+			for(const auto& star : it.value())
+			{
+				if(translated.find(star.englishName) != translated.end())
+					continue;
+				if(emittedNames.find(star.englishName) == emittedNames.end())
+				{
+					QString comments;
+					if(star.nativeName.isEmpty())
+						comments = QString("%1 name for HIP %2").arg(scName).arg(star.HIP);
+					else
+						comments = QString("%1 name for HIP %2, native: %3").arg(scName).arg(star.HIP).arg(star.nativeName);
+					comments += '\n' + star.translatorsComments;
+					dict.push_back({{comments}, star.englishName, ""});
+					emittedNames.insert(star.englishName);
+				}
+				else
+				{
+					// TODO: merge comments
+				}
+			}
+		}
+		for(auto it = namesLoader.planetsBegin(); it != namesLoader.planetsEnd(); ++it)
+		{
+			for(const auto& planet : it.value())
+			{
+				if(translated.find(planet.english) != translated.end())
+					continue;
+				if(emittedNames.find(planet.english) == emittedNames.end())
+				{
+					QString comments;
+					if(planet.native.isEmpty())
+						comments = QString("%1 name for NAME %2").arg(scName).arg(planet.id);
+					else
+						comments = QString("%1 name for NAME %2, native: %3").arg(scName).arg(planet.id, planet.native);
+					comments += '\n' + planet.translatorsComments;
+					dict.push_back({{comments}, planet.english, ""});
+					emittedNames.insert(planet.english);
+				}
+				else
+				{
+					// TODO: merge comments
+				}
+			}
+		}
+		for(auto it = namesLoader.dsosBegin(); it != namesLoader.dsosEnd(); ++it)
+		{
+			for(const auto& dso : it.value())
+			{
+				if(translated.find(dso.englishName) != translated.end())
+					continue;
+				if(emittedNames.find(dso.englishName) == emittedNames.end())
+				{
+					QString comments;
+					if(dso.nativeName.isEmpty())
+						comments = QString("%1 name for NAME %2").arg(scName).arg(dso.id);
+					else
+						comments = QString("%1 name for NAME %2, native: %3").arg(scName).arg(dso.id, dso.nativeName);
+					comments += '\n' + dso.translatorsComments;
+					dict.push_back({{comments}, dso.englishName, ""});
+					emittedNames.insert(dso.englishName);
+				}
+				else
+				{
+					// TODO: merge comments
+				}
+			}
+		}
+	}
+}
+
 void DescriptionOldLoader::loadTranslationsOfNames(const QString& poBaseDir, const QString& cultureIdQS, const QString& englishName,
                                                    const ConstellationOldLoader& consLoader, const AsterismOldLoader& astLoader,
                                                    const NamesOldLoader& namesLoader)
@@ -806,6 +922,7 @@ void DescriptionOldLoader::loadTranslationsOfNames(const QString& poBaseDir, con
 		}
 		po_file_free(file);
 	}
+	addUntranslatedNames(englishName, consLoader, astLoader, namesLoader);
 }
 
 void DescriptionOldLoader::locateAndRelocateAllInlineImages(QString& html, const bool saveToRefs)

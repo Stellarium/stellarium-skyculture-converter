@@ -38,6 +38,12 @@ public:
 	const DSOName* findDSO(QString const& englishName) const;
 	const PlanetName* findPlanet(QString const& englishName) const;
 	bool dumpJSON(std::ostream& s) const;
+	auto starsBegin() const { return starNames.cbegin(); }
+	auto starsEnd() const { return starNames.cend(); }
+	auto planetsBegin() const { return planetNames.cbegin(); }
+	auto planetsEnd() const { return planetNames.cend(); }
+	auto dsosBegin() const { return dsoNames.cbegin(); }
+	auto dsosEnd() const { return dsoNames.cend(); }
 
 private:
 	void loadStarNames(const QString& skyCultureDir, const QString& nativeLocale, bool convertUntranslatableNamesToNative);
