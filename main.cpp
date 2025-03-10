@@ -36,14 +36,14 @@ QString convertLicense(const QString& license)
 	return license;
 }
 
-void convertInfoIni(const QString& dir, std::ostream& s, QString& boundariesType, QString& author, QString& credit, QString& license, QString& cultureId, QString& englishName)
+void convertInfoIni(const QString& dir, std::ostream& s, QString& boundariesType, QString& author, QString& credit, QString& license, QString& cultureId, QString& region, QString& englishName)
 {
 	QSettings pd(dir + "/info.ini", QSettings::IniFormat); // FIXME: do we really need StelIniFormat here instead?
 	englishName = pd.value("info/name").toString();
 	author = pd.value("info/author").toString();
 	credit = pd.value("info/credit").toString();
 	license = pd.value("info/license", "").toString();
-	const auto region = pd.value("info/region", "???").toString();
+	region = pd.value("info/region", "???").toString();
 	const auto classification = pd.value("info/classification").toString();
 	boundariesType = pd.value("info/boundaries", "none").toString();
 
@@ -157,8 +157,8 @@ int main(int argc, char** argv)
 	// gave sky culture id rather than an empty string.
 	while(inDir.endsWith("/")) inDir.chop(1);
 	std::stringstream out;
-	QString boundariesType, author, credit, license, cultureId, englishName;
-	convertInfoIni(inDir, out, boundariesType, author, credit, license, cultureId, englishName);
+	QString boundariesType, author, credit, license, cultureId, region, englishName;
+	convertInfoIni(inDir, out, boundariesType, author, credit, license, cultureId, region, englishName);
 
 	AsterismOldLoader aLoader;
 	aLoader.load(inDir, cultureId);
@@ -201,9 +201,12 @@ int main(int argc, char** argv)
 	dLoader.dump(outDir);
 
 	std::cerr << "--- NOTE ---\n";
-	std::cerr << "* Some JSON values can't be deduced from the old-format data. They have been"
-	             " marked by \"???\". Please replace them with something sensible.\n";
-	std::cerr << "* Also, langs_use_native_names key is omitted since it has no counterpart"
+	if(region == "???")
+	{
+		std::cerr << "* Some JSON values can't be deduced from the old-format data. They have been"
+			     " marked by \"???\". Please replace them with something sensible.\n";
+	}
+	std::cerr << "* The key \"langs_use_native_names\" is omitted since it has no counterpart"
 	             " in the old format. If this sky culture needs it, please add it manually.\n";
 	std::cerr << "* The transformation of the description text is very basic, please check that"
 	             " it looks as it should. Pay special attention at References, Authors, and"
