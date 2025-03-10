@@ -47,7 +47,6 @@ void convertInfoIni(const QString& dir, std::ostream& s, QString& boundariesType
 	const auto classification = pd.value("info/classification").toString();
 	boundariesType = pd.value("info/boundaries", "none").toString();
 
-	const std::string highlight = "???";
 	cultureId = QFileInfo(dir).fileName();
 
 	// Now emit the JSON snippet
