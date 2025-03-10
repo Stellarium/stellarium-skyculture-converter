@@ -74,6 +74,9 @@ int usage(const char* argv0, const int ret)
 	    << "  --full-markdown            Try to convert most of HTML constructs to their Markdown counterparts\n"
 	    << "  --convert-olists           Try to convert ordered lists to Markdown (only when --full-markdown is on)\n"
 	    << "  --untrans-names-are-native Record untranslatable star/DSO names as native names\n"
+	    << "  --native-locale LOCALE     Use constellation_names.LOCALE.fab as a source for \"native\" constellation\n"
+	       "                             names (the middle column in constellation_names.eng.fab will be moved to\n"
+	       "                             the \"pronounce\" entry.\n"
 	    << "  --translated-md            Generate localized Markdown files (for checking translations)\n";
 	return ret;
 }
@@ -85,6 +88,7 @@ int main(int argc, char** argv)
 	QString inDir;
 	QString outDir;
 	QString poDir;
+	QString nativeLocale;
 	bool fullerConversion = false, footnotesToRefs = false, convertOrderedLists = false, genTranslatedMD = false;
 	bool convertUntranslatableNamesToNative = false;
 	for(int n = 1; n < argc; ++n)
@@ -111,6 +115,16 @@ int main(int argc, char** argv)
 			convertOrderedLists = true;
 		else if(arg == "--untrans-names-are-native")
 			convertUntranslatableNamesToNative = true;
+		else if(arg == "--native-locale")
+		{
+			++n;
+			if(n == argc)
+			{
+				std::cerr << "Option \"" << arg << "\" requires argument\n";
+				return usage(argv[0], 1);
+			}
+			nativeLocale = argv[n];
+		}
 		else if(arg == "--help" || arg == "-h")
 			return usage(argv[0], 0);
 	}
@@ -153,7 +167,7 @@ int main(int argc, char** argv)
 
 	ConstellationOldLoader cLoader;
 	cLoader.setBoundariesType(boundariesType.toStdString());
-	cLoader.load(inDir, outDir);
+	cLoader.load(inDir, outDir, nativeLocale);
 
 	NamesOldLoader nLoader;
 	nLoader.load(inDir, convertUntranslatableNamesToNative);

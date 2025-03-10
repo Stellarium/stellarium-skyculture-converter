@@ -13,6 +13,7 @@ public:
 		QString abbreviation;
 		QString englishName;
 		QString nativeName;
+		QString pronounce;
 		std::vector<int> references;
 		QString translatorsComments;
 		QString artTexture;
@@ -48,11 +49,12 @@ private:
 	void loadLinesAndArt(const QString &skyCultureDir, const QString& outDir);
 	void loadBoundaries(const QString& skyCultureDir);
 	void loadNames(const QString &skyCultureDir);
+    void loadNativeNames(const QString& skyCultureDir, const QString& nativeLocale);
 	void loadSeasonalRules(const QString& rulesFile);
 	bool dumpBoundariesJSON(std::ostream& s) const;
 	bool dumpConstellationsJSON(std::ostream& s) const;
 public:
-	void load(const QString &skyCultureDir, const QString& outDir);
+	void load(const QString &skyCultureDir, const QString& outDir, const QString& nativeLocale);
 	const Constellation* find(QString const& englishName) const;
 	bool dumpJSON(std::ostream& s) const;
 	bool hasBoundaries() const { return !boundaries.empty(); }

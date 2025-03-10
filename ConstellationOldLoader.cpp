@@ -304,6 +304,78 @@ void ConstellationOldLoader::loadLinesAndArt(const QString& skyCultureDir, const
 	fic.close();
 }
 
+void ConstellationOldLoader::loadNativeNames(const QString& skyCultureDir, const QString& nativeLocale)
+{
+	const auto namesFile = skyCultureDir + "/constellation_names." + nativeLocale + ".fab";
+
+	// Constellation not loaded yet
+	if (constellations.empty()) return;
+
+	// Open file
+	QFile nativeNameFile(namesFile);
+	if (!nativeNameFile.open(QIODevice::ReadOnly | QIODevice::Text))
+	{
+		qDebug() << "Cannot open file" << QDir::toNativeSeparators(namesFile);
+		return;
+	}
+
+	// Now parse the file
+	// lines to ignore which start with a # or are empty
+	static const QRegularExpression commentRx("^(\\s*#.*|\\s*)$");
+
+	// lines which look like records - we use the RE to extract the fields
+	// which will be available in recRx.capturedTexts()
+	// abbreviation is allowed to start with a dot to mark as "hidden".
+	static const QRegularExpression recRx("^\\s*(\\.?\\S+)\\s+\"(.*)\"\\s+_[(]\"(.*)\"[)]\\s*([\\,\\d\\s]*)\\n");
+
+	// keep track of how many records we processed.
+	int totalRecords=0;
+	int readOk=0;
+	int lineNumber=0;
+	while (!nativeNameFile.atEnd())
+	{
+		QString record = QString::fromUtf8(nativeNameFile.readLine());
+		lineNumber++;
+
+		if (record.contains(commentRx)) continue;
+
+		totalRecords++;
+
+		QRegularExpressionMatch recMatch=recRx.match(record);
+		if (!recMatch.hasMatch())
+		{
+			qWarning() << "ERROR - cannot parse record at line" << lineNumber << "in native constellation names file" << QDir::toNativeSeparators(namesFile) << ":" << record;
+		}
+		else
+		{
+			QString shortName = recMatch.captured(1);
+			Constellation *aster = findFromAbbreviation(shortName);
+			// If the constellation exists, set the English name
+			if (aster)
+			{
+				const auto native = recMatch.captured(3).trimmed();
+				if (native.isEmpty())
+				{
+					qWarning() << "Warning: empty native name at line" << lineNumber << "in native constellation names file" << QDir::toNativeSeparators(namesFile) << ":" << record;
+					continue;
+				}
+
+				if (!aster->nativeName.isEmpty())
+					aster->pronounce = aster->nativeName;
+				aster->nativeName = native;
+
+				readOk++;
+			}
+			else
+			{
+				qWarning() << "WARNING - constellation abbreviation" << shortName
+				           << "not found when loading native constellation names";
+			}
+		}
+	}
+	if(readOk != totalRecords)
+		qDebug() << "Loaded" << readOk << "/" << totalRecords << "constellation names";
+}
 void ConstellationOldLoader::loadNames(const QString& skyCultureDir)
 {
 	const auto namesFile = skyCultureDir + "/constellation_names.eng.fab";
@@ -474,11 +546,14 @@ void ConstellationOldLoader::loadBoundaries(const QString& skyCultureDir)
 	qDebug() << "Loaded" << i << "constellation boundary segments";
 }
 
-void ConstellationOldLoader::load(const QString& skyCultureDir, const QString& outDir)
+void ConstellationOldLoader::load(const QString& skyCultureDir, const QString& outDir,
+                                  const QString& nativeLocale)
 {
 	skyCultureName = QFileInfo(skyCultureDir).fileName();
 	loadLinesAndArt(skyCultureDir, outDir);
 	loadNames(skyCultureDir);
+	if(!nativeLocale.isEmpty())
+		loadNativeNames(skyCultureDir, nativeLocale);
 
 	for(const auto& cons : constellations)
 	{
@@ -557,8 +632,9 @@ bool ConstellationOldLoader::dumpConstellationsJSON(std::ostream& s) const
 		if(!xcomments.isEmpty())
 			xcomments = ", \"translators_comments\": \"" + jsonEscape(xcomments.trimmed()) + "\"";
 
-		s << "      \"common_name\": {\"english\": \"" << c.englishName.toStdString()
-		  << (c.nativeName.isEmpty() ? "\"" : "\", \"native\": \"" + c.nativeName.toStdString() + "\"")
+		s << "      \"common_name\": {\"english\": \"" << c.englishName.toStdString() << "\""
+		  << (c.nativeName.isEmpty() ? "" : ", \"native\": \"" + c.nativeName.toStdString() + "\"")
+		  << (c.pronounce.isEmpty() ? "" : ", \"pronounce\": \"" + c.pronounce.toStdString() + "\"")
 		  << refs << xcomments.toStdString() << "}\n"
 		     "    }";
 		if(&c != &constellations.back())
