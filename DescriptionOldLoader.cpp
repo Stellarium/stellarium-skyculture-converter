@@ -653,6 +653,8 @@ void DescriptionOldLoader::addUntranslatedNames(const QString scName, const Cons
 		std::set<QString> emittedNames;
 		for(const auto& cons : consLoader)
 		{
+			if(cons.englishName.isEmpty())
+				continue;
 			if(translated.find(cons.englishName) != translated.end())
 				continue;
 			if(emittedNames.find(cons.englishName) == emittedNames.end())
@@ -671,6 +673,8 @@ void DescriptionOldLoader::addUntranslatedNames(const QString scName, const Cons
 		}
 		for(const auto& ast : astLoader)
 		{
+			if(ast.getEnglishName().isEmpty())
+				continue;
 			if(translated.find(ast->getEnglishName()) != translated.end())
 				continue;
 			if(emittedNames.find(ast->getEnglishName()) == emittedNames.end())

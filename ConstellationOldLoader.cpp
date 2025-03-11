@@ -557,6 +557,10 @@ void ConstellationOldLoader::load(const QString& skyCultureDir, const QString& o
 
 	for(const auto& cons : constellations)
 	{
+		if(cons.englishName.isEmpty())
+		{
+			std::cerr << "WARNING: constellation " << cons.abbreviation.toStdString() << " has no English name\n";
+		}
 		if(cons.artTexture.isEmpty())
 		{
 			//std::cerr << "No texture found for constellation " << cons.englishName.toStdString() << " (" << cons.abbreviation.toStdString() << ")\n";
