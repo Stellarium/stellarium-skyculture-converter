@@ -650,43 +650,45 @@ void DescriptionOldLoader::addUntranslatedNames(const QString scName, const Cons
 		std::set<QString> translated;
 		for(const auto& entry : dict)
 			translated.insert(entry.english);
-		std::set<QString> emittedNames;
+		std::map<QString/*msgid*/,unsigned/*position in dict*/> emittedNames;
 		for(const auto& cons : consLoader)
 		{
 			if(cons.englishName.isEmpty())
 				continue;
 			if(translated.find(cons.englishName) != translated.end())
 				continue;
-			if(emittedNames.find(cons.englishName) == emittedNames.end())
+			QString comments = scName+" constellation";
+			if(!cons.nativeName.isEmpty())
+				comments += ", native: "+cons.nativeName;
+			comments += '\n' + cons.translatorsComments;
+			if(const auto it = emittedNames.find(cons.englishName); it == emittedNames.end())
 			{
-				QString comments = scName+" constellation";
-				if(!cons.nativeName.isEmpty())
-					comments += ", native: "+cons.nativeName;
-				comments += '\n' + cons.translatorsComments;
+				emittedNames[cons.englishName] = dict.size();
 				dict.push_back({{comments}, cons.englishName, ""});
-				emittedNames.insert(cons.englishName);
 			}
 			else
 			{
-				// TODO: merge comments
+				auto& entry = dict[it->second];
+				entry.comment.insert(comments);
 			}
 		}
 		for(const auto& ast : astLoader)
 		{
-			if(ast.getEnglishName().isEmpty())
+			if(ast->getEnglishName().isEmpty())
 				continue;
 			if(translated.find(ast->getEnglishName()) != translated.end())
 				continue;
-			if(emittedNames.find(ast->getEnglishName()) == emittedNames.end())
+			QString comments = scName+" asterism";
+			comments += '\n' + ast->getTranslatorsComments();
+			if(const auto it = emittedNames.find(ast->getEnglishName()); it == emittedNames.end())
 			{
-				QString comments = scName+" asterism";
-				comments += '\n' + ast->getTranslatorsComments();
+				emittedNames[ast->getEnglishName()] = dict.size();
 				dict.push_back({{comments}, ast->getEnglishName(), ""});
-				emittedNames.insert(ast->getEnglishName());
 			}
 			else
 			{
-				// TODO: merge comments
+				auto& entry = dict[it->second];
+				entry.comment.insert(comments);
 			}
 		}
 		for(auto it = namesLoader.starsBegin(); it != namesLoader.starsEnd(); ++it)
@@ -695,20 +697,21 @@ void DescriptionOldLoader::addUntranslatedNames(const QString scName, const Cons
 			{
 				if(translated.find(star.englishName) != translated.end())
 					continue;
-				if(emittedNames.find(star.englishName) == emittedNames.end())
+				QString comments;
+				if(star.nativeName.isEmpty())
+					comments = QString("%1 name for HIP %2").arg(scName).arg(star.HIP);
+				else
+					comments = QString("%1 name for HIP %2, native: %3").arg(scName).arg(star.HIP).arg(star.nativeName);
+				comments += '\n' + star.translatorsComments;
+				if(const auto it = emittedNames.find(star.englishName); it == emittedNames.end())
 				{
-					QString comments;
-					if(star.nativeName.isEmpty())
-						comments = QString("%1 name for HIP %2").arg(scName).arg(star.HIP);
-					else
-						comments = QString("%1 name for HIP %2, native: %3").arg(scName).arg(star.HIP).arg(star.nativeName);
-					comments += '\n' + star.translatorsComments;
+					emittedNames[star.englishName] = dict.size();
 					dict.push_back({{comments}, star.englishName, ""});
-					emittedNames.insert(star.englishName);
 				}
 				else
 				{
-					// TODO: merge comments
+					auto& entry = dict[it->second];
+					entry.comment.insert(comments);
 				}
 			}
 		}
@@ -718,20 +721,21 @@ void DescriptionOldLoader::addUntranslatedNames(const QString scName, const Cons
 			{
 				if(translated.find(planet.english) != translated.end())
 					continue;
-				if(emittedNames.find(planet.english) == emittedNames.end())
+				QString comments;
+				if(planet.native.isEmpty())
+					comments = QString("%1 name for NAME %2").arg(scName).arg(planet.id);
+				else
+					comments = QString("%1 name for NAME %2, native: %3").arg(scName).arg(planet.id, planet.native);
+				comments += '\n' + planet.translatorsComments;
+				if(const auto it = emittedNames.find(planet.english); it == emittedNames.end())
 				{
-					QString comments;
-					if(planet.native.isEmpty())
-						comments = QString("%1 name for NAME %2").arg(scName).arg(planet.id);
-					else
-						comments = QString("%1 name for NAME %2, native: %3").arg(scName).arg(planet.id, planet.native);
-					comments += '\n' + planet.translatorsComments;
+					emittedNames[planet.english] = dict.size();
 					dict.push_back({{comments}, planet.english, ""});
-					emittedNames.insert(planet.english);
 				}
 				else
 				{
-					// TODO: merge comments
+					auto& entry = dict[it->second];
+					entry.comment.insert(comments);
 				}
 			}
 		}
@@ -741,20 +745,21 @@ void DescriptionOldLoader::addUntranslatedNames(const QString scName, const Cons
 			{
 				if(translated.find(dso.englishName) != translated.end())
 					continue;
-				if(emittedNames.find(dso.englishName) == emittedNames.end())
+				QString comments;
+				if(dso.nativeName.isEmpty())
+					comments = QString("%1 name for NAME %2").arg(scName).arg(dso.id);
+				else
+					comments = QString("%1 name for NAME %2, native: %3").arg(scName).arg(dso.id, dso.nativeName);
+				comments += '\n' + dso.translatorsComments;
+				if(const auto it = emittedNames.find(dso.englishName); it == emittedNames.end())
 				{
-					QString comments;
-					if(dso.nativeName.isEmpty())
-						comments = QString("%1 name for NAME %2").arg(scName).arg(dso.id);
-					else
-						comments = QString("%1 name for NAME %2, native: %3").arg(scName).arg(dso.id, dso.nativeName);
-					comments += '\n' + dso.translatorsComments;
+					emittedNames[dso.englishName] = dict.size();
 					dict.push_back({{comments}, dso.englishName, ""});
-					emittedNames.insert(dso.englishName);
 				}
 				else
 				{
-					// TODO: merge comments
+					auto& entry = dict[it->second];
+					entry.comment.insert(comments);
 				}
 			}
 		}
