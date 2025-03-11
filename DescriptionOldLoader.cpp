@@ -774,6 +774,8 @@ void DescriptionOldLoader::loadTranslationsOfNames(const QString& poBaseDir, con
 	const auto cultureId = cultureIdQS.toStdString();
 
 	const auto poDir = poBaseDir+"/stellarium-skycultures";
+	if(!QFile(poDir).exists())
+		qWarning() << "Warning: no such directory" << poDir << "- will not load existing translations of names.";
 	for(const auto& fileName : QDir(poDir).entryList({"*.po"}))
 	{
 		const QString locale = fileName.chopped(3);
@@ -1337,12 +1339,6 @@ bool DescriptionOldLoader::dump(const QString& outDir) const
 
 		// I've found no API to *create* a header, so will try to emulate it with a message
 		const auto headerIt = poHeaders.find(locale);
-		if(headerIt == poHeaders.end())
-		{
-			qWarning().nospace() << "WARNING: No header for locale " << locale << " found. "
-				"This could mean that either this locale is not supported by Stellarium, "
-				"or its designation in the description file name is wrong.";
-		}
 		static const auto defaultHeaderTemplate = QLatin1String(
 			"Project-Id-Version: PACKAGE VERSION\n"
 			"MIME-Version: 1.0\n"

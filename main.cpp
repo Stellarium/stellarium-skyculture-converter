@@ -67,7 +67,7 @@ void writeEnding(std::string& s)
 int usage(const char* argv0, const int ret)
 {
 	auto& out = ret ? std::cerr : std::cout;
-	out << "Usage: " << argv0 << " [options...] skyCultureDir outputDir skyCulturePoDir\n"
+	out << "Usage: " << argv0 << " [options...] skyCultureDir outputDir [skyCulturePoDir]\n"
 	    << "Options:\n"
 	    << "  --footnotes-to-references  Try to convert footnotes to references\n"
 	    << "  --full-markdown            Try to convert most of HTML constructs to their Markdown counterparts\n"
@@ -137,10 +137,7 @@ int main(int argc, char** argv)
 		return usage(argv[0], 1);
 	}
 	if(poDir.isEmpty())
-	{
-		std::cerr << "Translations (po) directory not specified.\n";
-		return usage(argv[0], 1);
-	}
+		std::cerr << "Warning: translations (po) directory not specified. Will not load existing translations of names.\n";
 
 	if(QFile(outDir).exists())
 	{
