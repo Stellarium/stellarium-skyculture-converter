@@ -774,7 +774,7 @@ void DescriptionOldLoader::loadTranslationsOfNames(const QString& poBaseDir, con
 	const auto cultureId = cultureIdQS.toStdString();
 
 	const auto poDir = poBaseDir+"/stellarium-skycultures";
-	if(!QFile(poDir).exists())
+	if(!poBaseDir.isEmpty() && !QFile(poDir).exists())
 		qWarning() << "Warning: no such directory" << poDir << "- will not load existing translations of names.";
 	for(const auto& fileName : QDir(poDir).entryList({"*.po"}))
 	{
