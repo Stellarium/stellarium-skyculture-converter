@@ -159,7 +159,7 @@ void ConstellationOldLoader::loadLinesAndArt(const QString& skyCultureDir, const
 		}
 		else
 		{
-			qWarning() << "ERROR reading constellation lines record at line " << currentLineNumber;
+			qWarning() << "ERROR reading constellation lines record at line" << currentLineNumber;
 			constellations.pop_back();
 		}
 	}
