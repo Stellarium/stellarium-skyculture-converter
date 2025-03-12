@@ -82,7 +82,7 @@ void AsterismOldLoader::load(const QString& skyCultureDir, const QString& cultur
 	else
 	{
 		hasAsterism = false;
-		qWarning() << "No asterisms in " << skyCultureDir;
+		qWarning() << "No asterisms in" << skyCultureDir;
 	}
 
 	// load asterism names
@@ -136,7 +136,7 @@ void AsterismOldLoader::loadLines(const QString &fileName)
 		}
 		else
 		{
-			qWarning() << "ERROR reading asterism lines record at line " << currentLineNumber;
+			qWarning() << "ERROR reading asterism lines record at line" << currentLineNumber;
 			delete aster;
 		}
 	}
