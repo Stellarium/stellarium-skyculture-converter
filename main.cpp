@@ -125,6 +125,11 @@ int main(int argc, char** argv)
 		}
 		else if(arg == "--help" || arg == "-h")
 			return usage(argv[0], 0);
+        else
+        {
+            std::cerr << "Unknown option: " << arg << "\n";
+            return usage(argv[0], 1);
+        }
 	}
 	if(inDir.isEmpty())
 	{
