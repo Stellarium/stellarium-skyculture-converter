@@ -372,9 +372,9 @@ void cleanupWhitespace(QString& markdown)
 
 		const auto replaceEmpasis = [&markdown] {
 			// Replace simple HTML emphases with the Markdown ones
-			markdown.replace(QRegularExpression("<i>(\\s*)([^<\\s]{1,2}|[^<\\s][^<]+[^<\\s])(\\s*)</i>"), "\\1*\\2*\\3");
-			markdown.replace(QRegularExpression("<em>(\\s*)([^<\\s]{1,2}|[^<\\s][^<]+[^<\\s])(\\s*)</em>"), "\\1*\\2*\\3");
-			markdown.replace(QRegularExpression("<b>(\\s*)([^<\\s]{1,2}|[^<\\s][^<]+[^<\\s])(\\s*)</b>"), "\\1**\\2**\\3");
+			markdown.replace(QRegularExpression("<[iI]>(\\s*)([^<\\s]{1,2}|[^<\\s][^<]+[^<\\s])(\\s*)</[iI]>"), "\\1*\\2*\\3");
+			markdown.replace(QRegularExpression("<[eE][mM]>(\\s*)([^<\\s]{1,2}|[^<\\s][^<]+[^<\\s])(\\s*)</[eE][mM]>"), "\\1*\\2*\\3");
+			markdown.replace(QRegularExpression("<[bB]>(\\s*)([^<\\s]{1,2}|[^<\\s][^<]+[^<\\s])(\\s*)</[bB]>"), "\\1**\\2**\\3");
 			markdown.replace(QRegularExpression("<strong>(\\s*)([^<\\s]{1,2}|[^<\\s][^<]+[^<\\s])(\\s*)</strong>"), "\\1**\\2**\\3");
 		};
 		replaceEmpasis();
