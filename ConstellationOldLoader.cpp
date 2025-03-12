@@ -173,7 +173,7 @@ void ConstellationOldLoader::loadLinesAndArt(const QString& skyCultureDir, const
 	QFile fic(artfileName);
 	if (!fic.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
-		qWarning() << "Can't open constellation art file" << QDir::toNativeSeparators(fileName);
+		qWarning() << "Can't open constellation art file" << QDir::toNativeSeparators(artfileName);
 		return;
 	}
 

@@ -44,7 +44,7 @@ void NamesOldLoader::loadStarNames(const QString& skyCultureDir, const QString& 
         bool useNative = !nativeNameFile.isEmpty();
 	if (useNative && !nativeFile.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
-		qWarning().noquote() << "WARNING - could not open" << QDir::toNativeSeparators(nameFile);
+		qWarning().noquote() << "WARNING - could not open" << QDir::toNativeSeparators(nativeNameFile);
                 useNative = false;
 	}
 
