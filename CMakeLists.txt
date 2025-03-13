@@ -10,8 +10,9 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
-find_package(Qt6 6.2 REQUIRED Core Gui)
+find_package(Qt6 6.2 REQUIRED Core Gui Xml)
 find_package(GettextPo REQUIRED)
+find_package(LibTidy REQUIRED)
 
 add_executable(skyculture-converter
                 Utils.cpp
@@ -21,7 +22,7 @@ add_executable(skyculture-converter
                 ConstellationOldLoader.cpp
                 main.cpp
               )
-target_link_libraries(skyculture-converter Qt::Core Qt::Gui GettextPo::GettextPo)
+target_link_libraries(skyculture-converter Qt::Core Qt::Gui Qt::Xml GettextPo::GettextPo LibTidy::LibTidy)
 
 if(WIN32 AND (NOT MINGW))
     set(installBinDir ".")
@@ -29,7 +30,7 @@ if(WIN32 AND (NOT MINGW))
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHs")
 
     # Deploy Qt
-    set(libsToInstall Core;Gui)
+    set(libsToInstall Core;Gui;Xml)
     foreach(lib ${libsToInstall})
         install(FILES "$<TARGET_FILE:Qt6::${lib}>" DESTINATION "${installBinDir}")
     endforeach()

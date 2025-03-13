@@ -5,6 +5,8 @@ environment:
   gettextSrcBaseName: gettext-0.23.1
   gettextURL: https://github.com/vslavik/gettext-tools-windows/releases/download/v0.23.1/gettext-tools-windows-0.23.1.zip
   gettextBaseName: gettext-tools-windows-0.23.1
+  tidyURL: https://github.com/htacg/tidy-html5/releases/download/5.8.0/tidy-5.8.0-win64.zip
+  tidyBaseName: tidy-5.8.0-win64
   matrix:
     - BUILD_NAME: Win64 Qt6
       APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
@@ -42,7 +44,10 @@ for:
     - ps: (dumpbin /EXPORTS c:\$env:gettextBaseName\bin\libgettextpo.dll) -match "^.*\b(po_.*)$" -replace "^.*\b(po_.*)$","`$1" >> libgettextpo.def
     - ps: lib /def:libgettextpo.def /out:c:\$env:gettextBaseName\lib\libgettextpo.lib
 
-    - cmake -G "%CMAKE_GENERATOR%" -DCMAKE_PREFIX_PATH=c:\%gettextBaseName% -DCMAKE_INSTALL_PREFIX=../install ../stellarium-skyculture-converter %CMAKE_ARGS%
+    - ps: appveyor DownloadFile $env:tidyURL -FileName c:\$env:tidyBaseName.zip
+    - ps: 7z e c:\$env:tidyBaseName.zip -spf -oc:\
+
+    - cmake -G "%CMAKE_GENERATOR%" -DCMAKE_PREFIX_PATH=c:\%gettextBaseName%;c:\%tidyBaseName% -DCMAKE_INSTALL_PREFIX=../install ../stellarium-skyculture-converter %CMAKE_ARGS%
 
   build_script:
     - cmake --build . --config %configuration% -- /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
@@ -59,6 +64,7 @@ for:
     - bash -c "cp -v /c/$gettextBaseName/bin/libgettextpo.dll ../out/$tarballBaseName"
     - bash -c "cp -v /c/$gettextBaseName/bin/libiconv-2.dll ../out/$tarballBaseName"
     - bash -c "cp -v /c/$gettextBaseName/bin/libintl-8.dll ../out/$tarballBaseName"
+    - bash -c "cp -v /c/$tidyBaseName/bin/tidy.dll ../out/$tarballBaseName"
     - 7z a %tarballBaseName%.zip ../out/%tarballBaseName%
     - 7z l %tarballBaseName%.zip
     - appveyor PushArtifact %tarballBaseName%.zip

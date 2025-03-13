@@ -70,8 +70,6 @@ int usage(const char* argv0, const int ret)
 	out << "Usage: " << argv0 << " [options...] skyCultureDir outputDir [skyCulturePoDir]\n"
 	    << "Options:\n"
 	    << "  --footnotes-to-references  Try to convert footnotes to references\n"
-	    << "  --full-markdown            Try to convert most of HTML constructs to their Markdown counterparts\n"
-	    << "  --convert-olists           Try to convert ordered lists to Markdown (only when --full-markdown is on)\n"
 	    << "  --untrans-names-are-native Record untranslatable star/DSO names as native names\n"
 	    << "  --native-locale LOCALE     Use *_names.LOCALE.fab as a source for \"native\" constellation names (the\n"
 	       "                             middle column in *_names.eng.fab will be moved to the \"pronounce\" entry.\n"
@@ -87,7 +85,7 @@ int main(int argc, char** argv)
 	QString outDir;
 	QString poDir;
 	QString nativeLocale;
-	bool fullerConversion = false, footnotesToRefs = false, convertOrderedLists = false, genTranslatedMD = false;
+	bool footnotesToRefs = false, genTranslatedMD = false;
 	bool convertUntranslatableNamesToNative = false;
 	for(int n = 1; n < argc; ++n)
 	{
@@ -103,14 +101,10 @@ int main(int argc, char** argv)
 				return usage(argv[0], 1);
 			}
 		}
-		else if(arg == "--full-markdown")
-			fullerConversion = true;
 		else if(arg == "--translated-md")
 			genTranslatedMD = true;
 		else if(arg == "--footnotes-to-references")
 			footnotesToRefs = true;
-		else if(arg == "--convert-olists")
-			convertOrderedLists = true;
 		else if(arg == "--untrans-names-are-native")
 			convertUntranslatableNamesToNative = true;
 		else if(arg == "--native-locale")
@@ -199,7 +193,7 @@ int main(int argc, char** argv)
 	DescriptionOldLoader dLoader;
 	license = convertLicense(license);
 	dLoader.load(inDir, poDir, cultureId, englishName, author, credit, license, cLoader, aLoader, nLoader,
-	             fullerConversion, footnotesToRefs, convertOrderedLists, genTranslatedMD);
+	             footnotesToRefs, genTranslatedMD);
 	dLoader.dump(outDir);
 
 	std::cerr << "--- NOTE ---\n";

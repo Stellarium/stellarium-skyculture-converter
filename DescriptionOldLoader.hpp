@@ -48,6 +48,6 @@ public:
 	void load(const QString& inDir, const QString& poBaseDir, const QString& cultureId, const QString& englishName,
 	          const QString& author, const QString& credit, const QString& license,
 	          const ConstellationOldLoader& consLoader, const AsterismOldLoader& astLoader, const NamesOldLoader& namesLoader,
-	          bool fullerConversionToMarkdown, bool footnotesToRefs, bool convertOrderedLists, bool genTranslatedMD);
+	          bool footnotesToRefs, bool genTranslatedMD);
 	bool dump(const QString& outDir) const;
 };
