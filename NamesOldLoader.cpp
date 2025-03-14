@@ -439,11 +439,11 @@ bool NamesOldLoader::dumpJSON(std::ostream& s) const
 			if(!xcomments.isEmpty())
 				xcomments = ", \"translators_comments\": \"" + jsonEscape(xcomments.trimmed()) + "\"";
 			if(values[v].englishName.isEmpty())
-				s << ("{\"native\": \"" + values[v].nativeName + '"' + refs + xcomments + "}").toStdString();
+				s << ("{\"native\": \"" + jsonEscapeAndWarn(values[v].nativeName) + '"' + refs + xcomments + "}").toStdString();
 			else if(values[v].nativeName.isEmpty())
-				s << ("{\"english\": \"" + values[v].englishName + '"' + refs + xcomments + "}").toStdString();
+				s << ("{\"english\": \"" + jsonEscapeAndWarn(values[v].englishName) + '"' + refs + xcomments + "}").toStdString();
 			else
-				s << ("{\"english\": \"" + values[v].englishName + "\", \"native\": \"" + values[v].nativeName +'"' + refs + xcomments + "}").toStdString();
+				s << ("{\"english\": \"" + jsonEscapeAndWarn(values[v].englishName) + "\", \"native\": \"" + jsonEscapeAndWarn(values[v].nativeName) +'"' + refs + xcomments + "}").toStdString();
 			if(v+1 != values.size()) s << ",\n";
 		}
 		if(k+1 != starKeys.size() || !dsoNames.isEmpty() || !planetNames.isEmpty())
@@ -468,11 +468,11 @@ bool NamesOldLoader::dumpJSON(std::ostream& s) const
 			if(!xcomments.isEmpty())
 				xcomments = ", \"translators_comments\": \"" + jsonEscape(xcomments.trimmed()) + "\"";
 			if(values[v].englishName.isEmpty())
-				s << ("{\"native\": \"" + values[v].nativeName + '"' + refs + xcomments + "}").toStdString();
+				s << ("{\"native\": \"" + jsonEscapeAndWarn(values[v].nativeName) + '"' + refs + xcomments + "}").toStdString();
 			else if(values[v].nativeName.isEmpty())
-				s << ("{\"english\": \"" + values[v].englishName + '"' + refs + xcomments + "}").toStdString();
+				s << ("{\"english\": \"" + jsonEscapeAndWarn(values[v].englishName) + '"' + refs + xcomments + "}").toStdString();
 			else
-				s << ("{\"english\": \"" + values[v].englishName + "\", \"native\": \"" + values[v].nativeName +'"' + refs + xcomments + "}").toStdString();
+				s << ("{\"english\": \"" + jsonEscapeAndWarn(values[v].englishName) + "\", \"native\": \"" + jsonEscapeAndWarn(values[v].nativeName) +'"' + refs + xcomments + "}").toStdString();
 			if(v+1 != values.size()) s << ",\n";
 		}
 		if(k+1 != dsoKeys.size() || !planetNames.isEmpty())
@@ -494,8 +494,8 @@ bool NamesOldLoader::dumpJSON(std::ostream& s) const
 			auto xcomments = values[v].translatorsComments;
 			if(!xcomments.isEmpty())
 				xcomments = ", \"translators_comments\": \"" + jsonEscape(xcomments.trimmed()) + "\"";
-			s << ("{\"english\": \"" + values[v].english +
-			   "\", \"native\": \"" + values[v].native + "\"" + xcomments + "}").toStdString();
+			s << ("{\"english\": \"" + jsonEscapeAndWarn(values[v].english) +
+			   "\", \"native\": \"" + jsonEscapeAndWarn(values[v].native) + "\"" + xcomments + "}").toStdString();
 			if(v+1 != values.size()) s << ", ";
 		}
 		if(k+1 != planetKeys.size())

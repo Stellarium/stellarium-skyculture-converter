@@ -1,4 +1,6 @@
 #include "Utils.hpp"
+#include <iomanip>
+#include <iostream>
 #include <QDebug>
 #include <QStringList>
 
@@ -30,22 +32,42 @@ QString formatReferences(const std::vector<int>& refs)
 	return out;
 }
 
-QString jsonEscape(const QString& string)
+void warnAboutSpecialChars(const QString& s, const QString& what)
+{
+    std::cerr << "WARNING: special character " << what.toStdString()
+              << " found in string \"" << s.toStdString() << "\"\n";
+}
+
+QString jsonEscape(const QString& string, const bool warn)
 {
 	QString out;
 	for(const QChar c : string)
 	{
-		const int u = uint16_t(c.unicode());
+		const unsigned u = uint16_t(c.unicode());
 		if(u == '\\')
+        {
 			out += "\\\\";
+            if(warn) warnAboutSpecialChars(string, "\"backslash\"");
+        }
 		else if(u == '\n')
+        {
 			out += "\\n";
+            if(warn) warnAboutSpecialChars(string, "\"line break\"");
+        }
 		else if(u == '"')
+        {
 			out += "\\\"";
+            if(warn) warnAboutSpecialChars(string, "\"quotation mark\"");
+        }
 		else if(u < 0x20)
+        {
 			out += QString("\\u%1").arg(u, 4, 16, QLatin1Char('0'));
+            if(warn) warnAboutSpecialChars(string, QString("0x%1").arg(u, 4, 16, QLatin1Char('0')));
+        }
 		else
+        {
 			out += c;
+        }
 	}
 	return out;
 }
