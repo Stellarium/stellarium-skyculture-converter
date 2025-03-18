@@ -4,6 +4,7 @@
 #include <QDir>
 #include <QFile>
 #include <QDebug>
+#include <QFileInfo>
 #include <QRegularExpression>
 #include "Utils.hpp"
 
@@ -33,6 +34,11 @@ void NamesOldLoader::loadStarNames(const QString& skyCultureDir, const QString& 
                                    const bool convertUntranslatableNamesToNative)
 {
 	const auto nameFile = skyCultureDir + "/star_names.fab";
+	if(!QFileInfo(nameFile).exists())
+	{
+		qWarning() << "No star names found";
+		return;
+	}
 	QFile cnFile(nameFile);
 	if (!cnFile.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
@@ -203,6 +209,11 @@ void NamesOldLoader::loadDSONames(const QString& skyCultureDir, const QString& n
                                   const bool convertUntranslatableNamesToNative)
 {
 	const auto namesFile = skyCultureDir + "/dso_names.fab";
+	if(!QFileInfo(namesFile).exists())
+	{
+		qWarning() << "No DSO names found";
+		return;
+	}
 	QFile dsoNamesFile(namesFile);
 	if (!dsoNamesFile.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
@@ -344,6 +355,11 @@ auto NamesOldLoader::findDSO(QString const& englishName) const -> DSOName const*
 void NamesOldLoader::loadPlanetNames(const QString& skyCultureDir)
 {
 	const auto namesFile = skyCultureDir + "/planet_names.fab";
+	if(!QFileInfo(namesFile).exists())
+	{
+		qWarning() << "No planet names found";
+		return;
+	}
 	// Open file
 	QFile planetNamesFile(namesFile);
 	if (!planetNamesFile.open(QIODevice::ReadOnly | QIODevice::Text))
