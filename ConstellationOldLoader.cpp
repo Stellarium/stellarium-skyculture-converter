@@ -168,7 +168,7 @@ void ConstellationOldLoader::loadLinesAndArt(const QString& skyCultureDir, const
 		qDebug() << "Loaded" << readOk << "/" << totalRecords << "constellation records successfully";
 
 	// It's possible to have no art - just constellations
-	if (artfileName.isNull() || artfileName.isEmpty())
+	if (!QFileInfo(artfileName).exists())
 		return;
 	QFile fic(artfileName);
 	if (!fic.open(QIODevice::ReadOnly | QIODevice::Text))

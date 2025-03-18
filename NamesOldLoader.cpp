@@ -41,7 +41,7 @@ void NamesOldLoader::loadStarNames(const QString& skyCultureDir, const QString& 
 	}
 	const auto nativeNameFile = skyCultureDir + "/star_names." + nativeLocale + ".fab";
 	QFile nativeFile(nativeNameFile);
-        bool useNative = !nativeNameFile.isEmpty();
+	bool useNative = !nativeLocale.isEmpty();
 	if (useNative && !nativeFile.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
 		qWarning().noquote() << "WARNING - could not open" << QDir::toNativeSeparators(nativeNameFile);
@@ -212,7 +212,7 @@ void NamesOldLoader::loadDSONames(const QString& skyCultureDir, const QString& n
 
 	const auto nativeNameFile = skyCultureDir + "/dso_names." + nativeLocale + ".fab";
 	QFile nativeFile(nativeNameFile);
-        bool useNative = !nativeNameFile.isEmpty();
+	bool useNative = !nativeLocale.isEmpty();
 	if (useNative && !nativeFile.open(QIODevice::ReadOnly | QIODevice::Text))
 	{
 		qWarning() << "Failed to open file" << QDir::toNativeSeparators(nativeNameFile);

@@ -8,6 +8,7 @@
 #include <QDir>
 #include <QFile>
 #include <QDebug>
+#include <QFileInfo>
 #include <QRegularExpression>
 #include <gettext-po.h>
 #include "NamesOldLoader.hpp"
@@ -248,7 +249,7 @@ nextTable:
 QString readReferencesFile(const QString& inDir)
 {
 	const auto path = inDir + "/reference.fab";
-	if (path.isEmpty())
+	if (!QFileInfo(path).exists())
 	{
 		qWarning() << "Reference file wasn't found";
 		return "";
