@@ -82,7 +82,7 @@ void AsterismOldLoader::load(const QString& skyCultureDir, const QString& cultur
 	else
 	{
 		hasAsterism = false;
-		qWarning() << "No asterisms in" << skyCultureDir;
+		qWarning() << "No asterisms found";
 	}
 
 	// load asterism names

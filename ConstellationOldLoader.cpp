@@ -169,7 +169,10 @@ void ConstellationOldLoader::loadLinesAndArt(const QString& skyCultureDir, const
 
 	// It's possible to have no art - just constellations
 	if (!QFileInfo(artfileName).exists())
+     {
+          qWarning() << "No constellation art found";
 		return;
+     }
 	QFile fic(artfileName);
 	if (!fic.open(QIODevice::ReadOnly | QIODevice::Text))
 	{

@@ -251,7 +251,7 @@ QString readReferencesFile(const QString& inDir)
 	const auto path = inDir + "/reference.fab";
 	if (!QFileInfo(path).exists())
 	{
-		qWarning() << "Reference file wasn't found";
+		qWarning() << "No reference file, assuming the references are in the description text.";
 		return "";
 	}
 	QFile file(path);
