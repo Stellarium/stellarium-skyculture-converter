@@ -439,13 +439,17 @@ bool processHTMLNode(const QDomNode& parentNode, const bool insideTable, const b
 				{
 					std::cerr << "WARNING: Unexpected repeated <h1> tag. Demoting it to <h3>.\n";
 					markdown += "\n### ";
-					markdown += el.text().simplified();
+					QString text;
+					processHTMLNode(n, insideTable, footnotesToRefs, h1emitted, text);
+					markdown += text.simplified();
 					markdown += '\n';
 				}
 				else
 				{
 					markdown += "\n# ";
-					markdown += el.text().simplified();
+					QString text;
+					processHTMLNode(n, insideTable, footnotesToRefs, h1emitted, text);
+					markdown += text.simplified();
 					markdown += '\n';
 					h1emitted = true;
 				}
@@ -465,7 +469,9 @@ bool processHTMLNode(const QDomNode& parentNode, const bool insideTable, const b
 				markdown += '\n';
 				markdown += QString(level, QLatin1Char('#'));
 				markdown += ' ';
-				markdown += el.text().simplified();
+				QString text;
+				processHTMLNode(n, insideTable, footnotesToRefs, h1emitted, text);
+				markdown += text.simplified();
 				markdown += '\n';
 			}
 			else if(tagName == "i" || tagName == "em" || tagName == "b")
