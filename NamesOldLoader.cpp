@@ -374,7 +374,7 @@ void NamesOldLoader::loadPlanetNames(const QString& skyCultureDir)
 
 	// lines which look like records - we use the RE to extract the fields
 	// which will be available in recRx.capturedTexts()
-	static const QRegularExpression recRx("^\\s*(\\w+)\\s+\"(.+)\"\\s+_[(]\"(.+)\"[)]\\n");
+	static const QRegularExpression recRx("^\\s*(\\w+)\\s+\"(.+)\"\\s+_[(]\"(.+)\"[)](?:\\n|$)");
 
 	// keep track of how many records we processed.
 	int totalRecords=0;
