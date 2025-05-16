@@ -25,7 +25,7 @@ find_package(LibTidy REQUIRED)
 # Create a library for core converter components (loaders, utils, converter)
 add_library(skyculture_converter_lib
     Utils.cpp
-    Converter.cpp
+    SkyCultureConverter.cpp
     NamesOldLoader.cpp
     AsterismOldLoader.cpp
     DescriptionOldLoader.cpp
