@@ -17,157 +17,144 @@
 
 namespace SkyCultureConverter
 {
-    
-    namespace ReturnValues
+namespace // private namespace
+{
+
+QString convertLicense(const QString &license)
+{
+    auto parts = license.split("+");
+    for (auto &p : parts)
+        p = p.simplified();
+    for (auto &lic : parts)
     {
-        enum 
-        {
-            CONVERT_SUCCESS = 0,
-            ERR_OUTPUT_DIR_EXISTS = 1,
-            ERR_INFO_INI_NOT_FOUND = 2,
-            ERR_OUTPUT_DIR_CREATION_FAILED = 3,
-            ERR_OUTPUT_FILE_WRITE_FAILED = 4
-        };
-    } // namespace ReturnValues
+        if (lic.startsWith("Free Art "))
+            continue;
 
-    namespace // private namespace
+        lic.replace(QRegularExpression("(?: International)?(?: Publice?)? License"), "");
+    }
+
+    if (parts.size() == 1)
+        return parts[0];
+    if (parts.size() == 2)
     {
+        if (parts[1].startsWith("Free Art ") && !parts[0].startsWith("Free Art "))
+            return "Text and data: " + parts[0] + "\n\nIllustrations: " + parts[1];
+        else if (parts[0].startsWith("Free Art ") && !parts[1].startsWith("Free Art "))
+            return "Text and data: " + parts[1] + "\n\nIllustrations: " + parts[0];
+    }
+    std::cerr << "SkyCultureConverter::\tUnexpected combination of licenses, leaving them unformatted.\n";
+    return license;
+}
 
-        QString convertLicense(const QString &license)
+void convertInfoIni(const QString &dir, std::ostream &s, QString &boundariesType, QString &author, QString &credit, QString &license, QString &cultureId, QString &region, QString &englishName)
+{
+    QSettings pd(dir + "/info.ini", QSettings::IniFormat); // FIXME: do we really need StelIniFormat here instead?
+    englishName = pd.value("info/name").toString();
+    author = pd.value("info/author").toString();
+    credit = pd.value("info/credit").toString();
+    license = pd.value("info/license", "").toString();
+    region = pd.value("info/region", "???").toString();
+    const auto classification = pd.value("info/classification").toString();
+    boundariesType = pd.value("info/boundaries", "none").toString();
+
+    cultureId = QFileInfo(dir).fileName();
+
+    // Now emit the JSON snippet
+    s << "{\n"
+            "  \"id\": \"" +
+                cultureId.toStdString() + "\",\n"
+                                        "  \"region\": \"" +
+                region.toStdString() + "\",\n"
+                                    "  \"classification\": [\"" +
+                classification.toStdString() + "\"],\n"
+                                            "  \"fallback_to_international_names\": false,\n";
+}
+
+void writeEnding(std::string &s)
+{
+    if (s.size() > 2 && s.substr(s.size() - 2) == ",\n")
+        s.resize(s.size() - 2);
+    s += "\n}\n";
+}
+}
+
+ReturnValue convert(
+    const QString &inputDir,
+    const QString &outputDir,
+    const QString &poDir,
+    const QString &nativeLocale,
+    bool footnotesToRefs,
+    bool genTranslatedMD,
+    bool convertUntranslatableNamesToNative)
+{
+    // Ensure output does not already exist
+    if (QFile(outputDir).exists())
+    {
+        std::cerr << "SkyCultureConverter::\tOutput directory already exists, won't touch it.\n";
+        return ReturnValue::ERR_OUTPUT_DIR_EXISTS;
+    }
+    // Check for info.ini in input
+    if (!QFile(inputDir + "/info.ini").exists())
+    {
+        std::cerr << "SkyCultureConverter::\tError: info.ini file wasn't found\n";
+        return ReturnValue::ERR_INFO_INI_NOT_FOUND;
+    }
+
+    // Normalize input path
+    QString inDir = QDir::fromNativeSeparators(inputDir);
+    while (inDir.endsWith("/"))
+        inDir.chop(1);
+
+    // Read basic info
+    std::stringstream out;
+    QString boundariesType, author, credit, license, cultureId, region, englishName;
+    convertInfoIni(inDir, out, boundariesType, author, credit, license,
+                    cultureId, region, englishName);
+
+    // Load data
+    AsterismOldLoader aLoader;
+    aLoader.load(inDir, cultureId);
+
+    ConstellationOldLoader cLoader;
+    cLoader.setBoundariesType(boundariesType.toStdString());
+    cLoader.load(inDir, outputDir, nativeLocale);
+
+    NamesOldLoader nLoader;
+    nLoader.load(inDir, nativeLocale, convertUntranslatableNamesToNative);
+
+    aLoader.dumpJSON(out);
+    cLoader.dumpJSON(out);
+    nLoader.dumpJSON(out);
+
+    // Finalize and write JSON
+    auto str = std::move(out).str();
+    writeEnding(str);
+
+    if (!QDir().mkpath(outputDir))
+    {
+        std::cerr << "SkyCultureConverter::\tFailed to create output directory\n";
+        return ReturnValue::ERR_OUTPUT_DIR_CREATION_FAILED;
+    }
+    {
+        std::ofstream outFile((outputDir + "/index.json").toStdString());
+        outFile << str;
+        outFile.flush();
+        if (!outFile)
         {
-            auto parts = license.split("+");
-            for (auto &p : parts)
-                p = p.simplified();
-            for (auto &lic : parts)
-            {
-                if (lic.startsWith("Free Art "))
-                    continue;
-
-                lic.replace(QRegularExpression("(?: International)?(?: Publice?)? License"), "");
-            }
-
-            if (parts.size() == 1)
-                return parts[0];
-            if (parts.size() == 2)
-            {
-                if (parts[1].startsWith("Free Art ") && !parts[0].startsWith("Free Art "))
-                    return "Text and data: " + parts[0] + "\n\nIllustrations: " + parts[1];
-                else if (parts[0].startsWith("Free Art ") && !parts[1].startsWith("Free Art "))
-                    return "Text and data: " + parts[1] + "\n\nIllustrations: " + parts[0];
-            }
-            std::cerr << "SkyCultureConverter::\tUnexpected combination of licenses, leaving them unformatted.\n";
-            return license;
-        }
-
-        void convertInfoIni(const QString &dir, std::ostream &s, QString &boundariesType, QString &author, QString &credit, QString &license, QString &cultureId, QString &region, QString &englishName)
-        {
-            QSettings pd(dir + "/info.ini", QSettings::IniFormat); // FIXME: do we really need StelIniFormat here instead?
-            englishName = pd.value("info/name").toString();
-            author = pd.value("info/author").toString();
-            credit = pd.value("info/credit").toString();
-            license = pd.value("info/license", "").toString();
-            region = pd.value("info/region", "???").toString();
-            const auto classification = pd.value("info/classification").toString();
-            boundariesType = pd.value("info/boundaries", "none").toString();
-
-            cultureId = QFileInfo(dir).fileName();
-
-            // Now emit the JSON snippet
-            s << "{\n"
-                 "  \"id\": \"" +
-                     cultureId.toStdString() + "\",\n"
-                                               "  \"region\": \"" +
-                     region.toStdString() + "\",\n"
-                                            "  \"classification\": [\"" +
-                     classification.toStdString() + "\"],\n"
-                                                    "  \"fallback_to_international_names\": false,\n";
-        }
-
-        void writeEnding(std::string &s)
-        {
-            if (s.size() > 2 && s.substr(s.size() - 2) == ",\n")
-                s.resize(s.size() - 2);
-            s += "\n}\n";
+            std::cerr << "SkyCultureConverter::\tFailed to write index.json\n";
+            return ReturnValue::ERR_OUTPUT_FILE_WRITE_FAILED;
         }
     }
 
-    int convert(
-        const QString &inputDir,
-        const QString &outputDir,
-        const QString &poDir,
-        const QString &nativeLocale,
-        bool footnotesToRefs,
-        bool genTranslatedMD,
-        bool convertUntranslatableNamesToNative)
-    {
-        // Ensure output does not already exist
-        if (QFile(outputDir).exists())
-        {
-            std::cerr << "SkyCultureConverter::\tOutput directory already exists, won't touch it.\n";
-            return ReturnValues::ERR_OUTPUT_DIR_EXISTS;
-        }
-        // Check for info.ini in input
-        if (!QFile(inputDir + "/info.ini").exists())
-        {
-            std::cerr << "SkyCultureConverter::\tError: info.ini file wasn't found\n";
-            return ReturnValues::ERR_INFO_INI_NOT_FOUND;
-        }
+    // Description loader
+    DescriptionOldLoader dLoader;
+    license = convertLicense(license);
+    dLoader.load(inDir, poDir, cultureId, englishName,
+                    author, credit, license,
+                    cLoader, aLoader, nLoader,
+                    footnotesToRefs, genTranslatedMD);
+    dLoader.dump(outputDir);
 
-        // Normalize input path
-        QString inDir = QDir::fromNativeSeparators(inputDir);
-        while (inDir.endsWith("/"))
-            inDir.chop(1);
-
-        // Read basic info
-        std::stringstream out;
-        QString boundariesType, author, credit, license, cultureId, region, englishName;
-        convertInfoIni(inDir, out, boundariesType, author, credit, license,
-                       cultureId, region, englishName);
-
-        // Load data
-        AsterismOldLoader aLoader;
-        aLoader.load(inDir, cultureId);
-
-        ConstellationOldLoader cLoader;
-        cLoader.setBoundariesType(boundariesType.toStdString());
-        cLoader.load(inDir, outputDir, nativeLocale);
-
-        NamesOldLoader nLoader;
-        nLoader.load(inDir, nativeLocale, convertUntranslatableNamesToNative);
-
-        aLoader.dumpJSON(out);
-        cLoader.dumpJSON(out);
-        nLoader.dumpJSON(out);
-
-        // Finalize and write JSON
-        auto str = std::move(out).str();
-        writeEnding(str);
-
-        if (!QDir().mkpath(outputDir))
-        {
-            std::cerr << "SkyCultureConverter::\tFailed to create output directory\n";
-            return ReturnValues::ERR_OUTPUT_DIR_CREATION_FAILED;
-        }
-        {
-            std::ofstream outFile((outputDir + "/index.json").toStdString());
-            outFile << str;
-            outFile.flush();
-            if (!outFile)
-            {
-                std::cerr << "SkyCultureConverter::\tFailed to write index.json\n";
-                return ReturnValues::ERR_OUTPUT_FILE_WRITE_FAILED;
-            }
-        }
-
-        // Description loader
-        DescriptionOldLoader dLoader;
-        license = convertLicense(license);
-        dLoader.load(inDir, poDir, cultureId, englishName,
-                     author, credit, license,
-                     cLoader, aLoader, nLoader,
-                     footnotesToRefs, genTranslatedMD);
-        dLoader.dump(outputDir);
-
-        return ReturnValues::CONVERT_SUCCESS;
-    }
+    return ReturnValue::CONVERT_SUCCESS;
+}
 }
