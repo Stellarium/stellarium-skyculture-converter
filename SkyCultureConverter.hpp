@@ -4,8 +4,16 @@
 
 /// A single function interface to convert a sky culture directory into JSON and write to an output directory.
 namespace SkyCultureConverter
-
 {
+    enum class ReturnValue
+    {
+        CONVERT_SUCCESS,
+        ERR_OUTPUT_DIR_EXISTS,
+        ERR_INFO_INI_NOT_FOUND,
+        ERR_OUTPUT_DIR_CREATION_FAILED,
+        ERR_OUTPUT_FILE_WRITE_FAILED
+    };
+    
     /**
      * @brief Convert the sky culture from inputDir to outputDir.
      *
@@ -17,14 +25,14 @@ namespace SkyCultureConverter
      * @param genTranslatedMD If true, generates localized Markdown files.
      * @param convertUntranslatableNamesToNative If true, uses untranslatable names as native names.
      *
-     * @return Return code indicating the result of the operation.
-     * @retval 0 Conversion completed successfully. (CONVERT_SUCCESS)
-     * @retval 1 Output directory already exists. (ERR_OUTPUT_DIR_EXISTS)
-     * @retval 2 info.ini was not found in the input directory. (ERR_INFO_INI_NOT_FOUND)
-     * @retval 3 Failed to create the output directory. (ERR_OUTPUT_DIR_CREATION_FAILED)
-     * @retval 4 Failed to write to an output file. (ERR_OUTPUT_FILE_WRITE_FAILED)
+     * @return Return code indicating the result of the operation
+     * @retval ReturnValue::CONVERT_SUCCESS                 - Conversion completed successfully
+     * @retval ReturnValue::ERR_OUTPUT_DIR_EXISTS           -  Output directory already exists
+     * @retval ReturnValue::ERR_INFO_INI_NOT_FOUND          - info.ini was not found in the input directory
+     * @retval ReturnValue::ERR_OUTPUT_DIR_CREATION_FAILED  - Failed to create the output directory
+     * @retval ReturnValue::ERR_OUTPUT_FILE_WRITE_FAILED    - Failed to write to an output file
      */
-    int convert(
+    ReturnValue convert(
         const QString &inputDir,
         const QString &outputDir,
         const QString &poDir = QString(),

@@ -61,9 +61,9 @@ int main(int argc, char **argv)
             return usage(argv[0], 1);
     }
     // invoke converter
-    int result = SkyCultureConverter::convert(inDir, outDir, poDir, nativeLocale,
+    auto result = SkyCultureConverter::convert(inDir, outDir, poDir, nativeLocale,
                                               footnotesToRefs, genTranslatedMD,
                                               convertUntranslatableNamesToNative);
-    std::cout << "SkyCultureConverter::\tConversion return-code: " << result << "\n";
-    return result;
+    std::cout << "SkyCultureConverter::\tConversion return-code: " << static_cast<int>(result) << "\n";
+    return EXIT_SUCCESS;
 }
