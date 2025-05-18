@@ -5,6 +5,7 @@
 #include <QCoreApplication>
 #include "SkyCultureConverter.hpp"
 #include "Utils.hpp"
+#include <QMetaEnum>
 
 int usage(const char *argv0, const int ret)
 {
@@ -60,10 +61,17 @@ int main(int argc, char **argv)
         else
             return usage(argv[0], 1);
     }
-    // invoke converter
+    
     auto result = SkyCultureConverter::convert(inDir, outDir, poDir, nativeLocale,
-                                              footnotesToRefs, genTranslatedMD,
-                                              convertUntranslatableNamesToNative);
-    std::cout << "SkyCultureConverter::\tConversion return-code: " << static_cast<int>(result) << "\n";
-    return EXIT_SUCCESS;
+                                               footnotesToRefs, genTranslatedMD,
+                                               convertUntranslatableNamesToNative);
+
+    if (result != SkyCultureConverter::ReturnValue::CONVERT_SUCCESS)
+    {
+        std::cerr << "SkyCultureConverter::\tConversion failed with error code: "
+                  << QMetaEnum::fromType<SkyCultureConverter::ReturnValue>().valueToKey(static_cast<int>(result)) << "\n";
+        return static_cast<int>(result);
+    }
+
+    return static_cast<int>(result);
 }
