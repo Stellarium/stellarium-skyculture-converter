@@ -70,7 +70,6 @@ int main(int argc, char **argv)
     {
         std::cerr << "SkyCultureConverter::\tConversion failed with error code: "
                   << QMetaEnum::fromType<SkyCultureConverter::ReturnValue>().valueToKey(static_cast<int>(result)) << "\n";
-        return static_cast<int>(result);
     }
 
     return static_cast<int>(result);
