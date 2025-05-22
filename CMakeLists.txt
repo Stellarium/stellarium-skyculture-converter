@@ -10,19 +10,37 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
-find_package(Qt6 6.2 REQUIRED Core Gui Xml)
+
+FIND_PACKAGE(Qt6 COMPONENTS Core Gui Xml)
+
 find_package(GettextPo REQUIRED)
 find_package(LibTidy REQUIRED)
 
+# Create a library for core converter components (loaders, utils, converter)
+add_library(skyculture_converter_lib
+    Utils.cpp
+    SkyCultureConverter.cpp
+    NamesOldLoader.cpp
+    AsterismOldLoader.cpp
+    DescriptionOldLoader.cpp
+    ConstellationOldLoader.cpp
+)
+target_include_directories(skyculture_converter_lib
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
+)
+target_link_libraries(skyculture_converter_lib
+    PUBLIC Qt::Core Qt::Gui Qt::Xml
+           GettextPo::GettextPo LibTidy::LibTidy
+)
+
+# Build the CLI executable linking against the library
 add_executable(skyculture-converter
-                Utils.cpp
-                NamesOldLoader.cpp
-                AsterismOldLoader.cpp
-                DescriptionOldLoader.cpp
-                ConstellationOldLoader.cpp
-                main.cpp
-              )
-target_link_libraries(skyculture-converter Qt::Core Qt::Gui Qt::Xml GettextPo::GettextPo LibTidy::LibTidy)
+    main.cpp
+)
+# Link executable to the converter library
+target_link_libraries(skyculture-converter
+    PRIVATE skyculture_converter_lib
+)
 
 if(WIN32 AND (NOT MINGW))
     set(installBinDir ".")
