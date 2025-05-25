@@ -15,9 +15,7 @@
 #include <iostream>
 #include <sstream>
 
-namespace SkyCultureConverter
-{
-namespace // private namespace
+namespace
 {
 
 QString convertLicense(const QString &license)
@@ -76,7 +74,11 @@ void writeEnding(std::string &s)
         s.resize(s.size() - 2);
     s += "\n}\n";
 }
+
 }
+
+namespace SkyCultureConverter
+{
 
 ReturnValue convert(
     const QString &inputDir,
@@ -157,4 +159,5 @@ ReturnValue convert(
 
     return ReturnValue::CONVERT_SUCCESS;
 }
+
 }
