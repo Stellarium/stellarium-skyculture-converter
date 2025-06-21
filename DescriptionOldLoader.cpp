@@ -484,7 +484,7 @@ bool processHTMLNode(const QDomNode& parentNode, const bool insideTable, const b
 				while(!text.isEmpty() && text[0].isSpace())
 				{
 					markdown += text[0];
-					text.removeFirst();
+					text.remove(0, 1);
 				}
 				QString trailingWS;
 				while(!text.isEmpty() && text.back().isSpace())
