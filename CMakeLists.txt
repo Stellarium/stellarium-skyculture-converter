@@ -17,7 +17,7 @@ find_package(GettextPo REQUIRED)
 find_package(LibTidy REQUIRED)
 
 # Create a library for core converter components (loaders, utils, converter)
-add_library(skyculture_converter_lib
+add_library(libskycultureconverter
     Utils.cpp
     SkyCultureConverter.cpp
     NamesOldLoader.cpp
@@ -25,10 +25,10 @@ add_library(skyculture_converter_lib
     DescriptionOldLoader.cpp
     ConstellationOldLoader.cpp
 )
-target_include_directories(skyculture_converter_lib
+target_include_directories(libskycultureconverter
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 )
-target_link_libraries(skyculture_converter_lib
+target_link_libraries(libskycultureconverter
     PUBLIC Qt::Core Qt::Gui Qt::Xml
            GettextPo::GettextPo LibTidy::LibTidy
 )
@@ -39,7 +39,7 @@ add_executable(skyculture-converter
 )
 # Link executable to the converter library
 target_link_libraries(skyculture-converter
-    PRIVATE skyculture_converter_lib
+    PRIVATE libskycultureconverter
 )
 
 if(WIN32 AND (NOT MINGW))
